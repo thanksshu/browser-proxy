@@ -28,26 +28,38 @@ supportMethods.add("OPTIONS");
  */
 const handleRequest = async (request) => {
   const url = new URL(request.url);
-  let targetUrl = url.searchParams.get("url");
+  const newRequestHeaders = new Headers(request.headers); // Create mutable headers
 
-  if (targetUrl === null) {
-    return new Response(null, {
-      status: 400,
-      statusText: "Bad Request",
-    });
-  }
+  newRequestHeaders.set("Origin", url.origin);
+  let newRequest = new Request(url, {
+    headers: newRequestHeaders,
+    body: request.body,
+    cache: request.cache,
+    credentials: request.credentials,
+    integrity: request.integrity,
+    keepalive: request.keepalive,
+    method: request.method,
+    mode: request.mode,
+    redirect: request.redirect,
+    referrer: request.referrer,
+    referrerPolicy: request.referrerPolicy,
+    signal: request.signal,
+  });
 
-  request = new Request(new URL(targetUrl), request); // Create a mutable request
-  request.headers.set("Origin", new URL(targetUrl).origin); // Rewrite origin
+  console.log(...newRequest.headers);
 
-  let response = await fetch(request);
+  let response = await fetch(newRequest);
 
-  response = new Response(response.body, response); // Create a mutable response
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  // Hint the browser to correctly cache the request
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-  response.headers.append("Vary", "Origin");
-  return response;
+  const newResponseHeaders = new Headers(response.headers); // Create mutable headers
+  newResponseHeaders.set("Access-Control-Allow-Origin", "*");
+  newResponseHeaders.set("Vary", "Origin"); // Hint the browser to correctly cache the request
+  const newResponse = new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: newResponseHeaders,
+  });
+
+  return newResponse;
 };
 
 /**
@@ -80,24 +92,7 @@ const handleOptions = async (request) => {
   }
 };
 
-self.addEventListener("fetch", async (event) => {
-  const client = await self.clients.get(event.clientId);
-  // Only send the message when the client is alive
-  if (client) {
-    client.postMessage({
-      msg: "Hey I just got a fetch from you!",
-      url: event.request.url,
-    });
-  }
-
-  event.respondWith(
-    async (_) =>
-      new Response(null, {
-        status: 405,
-        statusText: "Method Not Allowed",
-      })
-  );
-
+self.addEventListener("fetch", (event) => {
   const method = event.request.method;
   if (method === "OPTIONS") {
     event.respondWith(handleOptions(event.request));
