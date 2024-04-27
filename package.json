@@ -1,0 +1,12 @@
+{
+  "name": "proxy",
+  "version": "0.0.1",
+  "description": "A browser based CORS proxy",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "thanksshu",
+  "license": "GPL-3.0-or-later"
+}
