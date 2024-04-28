@@ -1,31 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Proxy</title>
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Proxy</title>
-</head>
+    <body>
+        <script>
+            const genId = () => crypto.randomUUID();
 
-<body>
-    <script>
-        const registerBrowserProxy = async () => {
-            try {
-                const registration = await navigator.serviceWorker.register("/sw.js");
-                await navigator.serviceWorker.ready;
-                window.addEventListener('beforeunload', async () => {
-                    await registration.unregister();
-                });
-            } catch (error) {
-                console.error(`[browser proxy] Service Worker registration failed with ${error}`);
-            }
-        };
-
-        if ("serviceWorker" in navigator) {
-            registerBrowserProxy();
-        } else {
-            console.error("[browser proxy] Service Worker not supported");
-        }
-    </script>
-</body>
-
+            window.addEventListener("message", (event) => {
+                const message = event.data;
+                if (
+                    message.type === "__BROWSER_PROXY_EXTENSION_RESPONSE__" ||
+                    message.type === "__BROWSER_PROXY_EXTENSION_ERROR__"
+                ) {
+                    console.info(
+                        `${new Date().toLocaleString()} [Browser Proxy] Received: `,
+                        message
+                    );
+                }
+            });
+        </script>
+    </body>
 </html>

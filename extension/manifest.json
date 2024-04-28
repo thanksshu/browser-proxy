@@ -1,0 +1,20 @@
+{
+    "name": "browser proxy",
+    "version": "0.0.0.1",
+    "manifest_version": 3,
+    "description": "An extension for browser proxy",
+    "icons": {
+        "128": "icon.png"
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "host_permissions": ["<all_urls>"],
+    "content_scripts": [
+        {
+            "js": ["content.js"],
+            "matches": ["http://localhost/*", "https://localhost/*"]
+        }
+    ]
+}
