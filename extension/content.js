@@ -1,47 +1,49 @@
 "use strict";
 
-const buildResponseMessageForIndex = (id, message) => {
-    return {
-        type: "__BROWSER_PROXY_EXTENSION_RESPONSE__",
-        id: id,
-        response: message,
-    };
+const init = () => {
+    chrome.runtime.sendMessage({ type: "init" });
 };
 
-const buildErrorMessageForIndex = (id, message) => {
-    return {
-        type: "__BROWSER_PROXY_EXTENSION_ERROR__",
-        id: id,
-        error: message,
-    };
+const buildResponseForPage = (message) => {
+    return;
+};
+
+const buildErrorForPage = (message) => {
+    return;
 };
 
 /**
- * Send message received from background to index
+ * Send message received from background to page
  * @param {*} message
+ * @param {MessagePort} port
  */
-const handleBackgroundMessage = (message, id) => {
+const handleBackgroundMessage = (message, port) => {
     if (message.type === "response") {
-        window.postMessage(buildResponseMessageForIndex(id, message.response));
+        port.postMessage({
+            type: "__BROWSER_PROXY_EXTENSION_RESPONSE__",
+            response: message.response,
+        });
     } else if (message.type === "error") {
-        window.postMessage(buildErrorMessageForIndex(id, message.error));
+        port.postMessage(
+            buildErrorForPage({
+                type: "__BROWSER_PROXY_EXTENSION_ERROR__",
+                error: message.error,
+            })
+        );
     }
 };
-
-console.info(
-    `${new Date().toLocaleString()} [Browser Proxy Extension] Content script loaded`
-);
 
 window.addEventListener("message", (event) => {
     const messageFromPage = event.data;
 
-    // An id is needed for each request
-    if (!Object.hasOwn(messageFromPage, "id")) {
-        window.postMessage(buildErrorMessageForIndex(null, "No id provided"));
+    if (!Object.hasOwn(messageFromPage, "type")) {
         return;
-    }
+    } else if (messageFromPage.type === "__BROWSER_PROXY_EXTENSION_REQUEST__") {
+        // A port is needed for each request
+        if (!Object.hasOwn(messageFromPage, "port")) {
+            return;
+        }
 
-    if (messageFromPage.type === "__BROWSER_PROXY_EXTENSION_REQUEST__") {
         chrome.runtime.sendMessage(
             // Send message to background
             {
@@ -52,9 +54,15 @@ window.addEventListener("message", (event) => {
             (messageFromBackground) => {
                 handleBackgroundMessage(
                     messageFromBackground,
-                    messageFromPage.id
+                    messageFromPage.port
                 );
             }
         );
     }
 });
+
+init();
+
+console.info(
+    `${new Date().toLocaleString()} [Browser Proxy Extension] Content script loaded`
+);

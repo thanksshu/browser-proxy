@@ -73,10 +73,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 
-    if (message.type === "request") {
+    if (message.type && message.type === "request") {
         // The sendResponse function only takes simple objects,
         // so Response is already converted in the sendRequest function
         sendRequest(message.requestConfig).then(sendResponse);
+    } else if (message.type && message.type === "init" && sender.tab.id) {
+        // Inject a script to simplify fetching with extension
+        chrome.scripting.executeScript({
+            target: {
+                tabId: sender.tab.id,
+            },
+            files: ["init.js"],
+            world: "MAIN",
+        });
     } else {
         sendResponse();
     }
