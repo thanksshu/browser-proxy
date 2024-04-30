@@ -3,16 +3,6 @@
 console.log(bufferToBase64);
 
 /**
- * Inject the script into the document
- */
-const init = () => {
-    const script = document.createElement("script");
-    script.src = chrome.runtime.getURL("injection.js");
-    document.documentElement.appendChild(script);
-    script.parentNode.removeChild(script);
-};
-
-/**
  * Convert a request to request config
  * @param {Request} request
  * @returns {Object} Request Config
@@ -83,8 +73,6 @@ window.addEventListener("message", (event) => {
         );
     }
 });
-
-init();
 
 console.info(
     `${new Date().toLocaleString()} [Browser Proxy Extension] Content script loaded`

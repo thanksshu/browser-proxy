@@ -12,12 +12,6 @@
     },
     "permissions": ["scripting"],
     "host_permissions": ["<all_urls>"],
-    "web_accessible_resources": [
-        {
-            "resources": ["injection.js"],
-            "matches": ["http://localhost/*", "https://localhost/*"]
-        }
-    ],
     "content_scripts": [
         {
             "js": ["utils.js", "content.js"],
