@@ -1,6 +1,6 @@
 {
     "name": "browser proxy",
-    "version": "0.0.0.1",
+    "version": "0.0.2",
     "manifest_version": 3,
     "description": "An extension for browser proxy",
     "icons": {
@@ -10,11 +10,17 @@
         "service_worker": "background.js",
         "type": "module"
     },
-    "permissions": ["tabs", "scripting"],
+    "permissions": ["scripting"],
     "host_permissions": ["<all_urls>"],
+    "web_accessible_resources": [
+        {
+            "resources": ["injection.js"],
+            "matches": ["http://localhost/*", "https://localhost/*"]
+        }
+    ],
     "content_scripts": [
         {
-            "js": ["content.js"],
+            "js": ["utils.js", "content.js"],
             "matches": ["http://localhost/*", "https://localhost/*"]
         }
     ]

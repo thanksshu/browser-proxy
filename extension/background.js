@@ -1,17 +1,6 @@
 "use strict";
 
-/**
- * Convert arraybuffer to base64 string
- * @param {ArrayBuffer} arraybuffer
- * @returns Base64 string
- */
-const bufferToBase64 = (arraybuffer) => {
-    return btoa(
-        Array.from(new Uint8Array(arraybuffer))
-            .map((b) => String.fromCharCode(b))
-            .join("")
-    );
-};
+import { bufferToBase64 } from "./utils.js";
 
 /**
  * Convert a response to a simple object
@@ -74,18 +63,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.type && message.type === "request") {
-        // The sendResponse function only takes simple objects,
-        // so Response is already converted in the sendRequest function
+        // The sendResponse function only takes JSON-ifiable object
+        // so Response is converted in the sendRequest function
         sendRequest(message.requestConfig).then(sendResponse);
-    } else if (message.type && message.type === "init" && sender.tab.id) {
-        // Inject a script to simplify fetching with extension
-        chrome.scripting.executeScript({
-            target: {
-                tabId: sender.tab.id,
-            },
-            files: ["init.js"],
-            world: "MAIN",
-        });
     } else {
         sendResponse();
     }

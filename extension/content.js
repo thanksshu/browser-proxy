@@ -1,15 +1,37 @@
 "use strict";
 
+console.log(bufferToBase64);
+
+/**
+ * Inject the script into the document
+ */
 const init = () => {
-    chrome.runtime.sendMessage({ type: "init" });
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("injection.js");
+    document.documentElement.appendChild(script);
+    script.parentNode.removeChild(script);
 };
 
-const buildResponseForPage = (message) => {
-    return;
-};
-
-const buildErrorForPage = (message) => {
-    return;
+/**
+ * Convert a request to request config
+ * @param {Request} request
+ * @returns {Object} Request Config
+ */
+const requestToConfig = async (request) => {
+    return {
+        url: request.url,
+        headers: Object.entries(request.headers),
+        body: request.body,
+        cache: request.cache,
+        credentials: request.credentials,
+        integrity: request.integrity,
+        keepalive: request.keepalive,
+        method: request.method,
+        mode: request.mode,
+        redirect: request.redirect,
+        referrer: request.referrer,
+        referrerPolicy: request.referrerPolicy,
+    };
 };
 
 /**
@@ -44,11 +66,12 @@ window.addEventListener("message", (event) => {
             return;
         }
 
-        chrome.runtime.sendMessage(
-            // Send message to background
+        const request = messageFromPage.request;
+        const requestConfig = chrome.runtime.sendMessage(
+            // Send message to background, message must be JSON-ifiable
             {
                 type: "request",
-                requestConfig: messageFromPage.requestConfig,
+                requestConfig,
             },
             // Handle message from background
             (messageFromBackground) => {
