@@ -1,32 +1,31 @@
 "use strict";
 
-const _key =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
 /**
  * Convert ArrayBuffer to base64 string
  * @param {ArrayBuffer} arrayBuffer
  * @returns {String} Base64 string
  * @throws {Error} Error
  */
-const bufferToBase64 = async (arrayBuffer) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-        // Remove the Data-URL declaration
-        return reader.result.replace(
-            "data:application/octet-stream;base64,",
-            ""
+const bufferToBase64 = async (arrayBuffer) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () =>
+            resolve(
+                // Remove the Data-URL declaration
+                reader.result.replace(
+                    "data:application/octet-stream;base64,",
+                    ""
+                )
+            );
+
+        reader.onerror = () => reject(reader.error);
+
+        reader.readAsDataURL(
+            new File([new Uint8Array(arrayBuffer)], "", {
+                type: "application/octet-stream",
+            })
         );
-    };
-    reader.onerror = () => {
-        throw reader.error;
-    };
-    reader.readAsDataURL(
-        new File([new Uint8Array(arrayBuffer)], "", {
-            type: "application/octet-stream",
-        })
-    );
-};
+    });
 
 /**
  * Convert base64 string to ArrayBuffer
